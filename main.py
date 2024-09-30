@@ -1,6 +1,7 @@
 import os
 import subprocess
 import random
+import time
 from pymediainfo import MediaInfo
 
 FILE_EXTENSIONS=['mkv', 'mp4', 'ts']
@@ -8,13 +9,44 @@ FILE_EXTENSIONS=['mkv', 'mp4', 'ts']
 class MPVController:
     """Handles interactions with MPV commands."""
     
-    def __init__(self, ipc_path='/tmp/mpvsocket'):
+    def __init__(self, ipc_path=r'\\.\pipe\mpv-pipe'):
         self._ipc_path = ipc_path
         self._playlist = PlaylistManager().playlist
+        self.mpv_process = subprocess.Popen(['mpv', '--idle', f'--input-ipc-server={self._ipc_path}', '--no-terminal'],
+                                       shell=True,
+                                       stdin=subprocess.PIPE,
+                                       stdout=subprocess.PIPE,
+                                       stderr=subprocess.PIPE)
+        
+        # "003 How To Get The Most Out Of This Course copy 2.mp4" | Out-File -Encoding ASCII -NoNewline \\.\pipe\mpv-pipe
+        # mpv "003 How To Get The Most Out Of This Course copy 2.mp4" --input-ipc-server=\\.\pipe\mpvsocket
+
+    def wait_for_pipe(self, timeout=5, interval=0.1):
+        """Wait for the IPC pipe to be created."""
+        pipe_path = self._ipc_path
+        elapsed_time = 0
+        while elapsed_time < timeout:
+            if os.path.exists(pipe_path):  # Check if pipe exists
+                print("Pipe is ready.")
+                return True
+            time.sleep(interval)
+            elapsed_time += interval
+        raise TimeoutError("IPC pipe was not created in time.")
+
+
+    def send_command(self, command):
+        """Send command to pipe"""
+        try:
+           with open(self._ipc_path, 'w') as pipe:
+               pipe.write(command + "\n")
+               pipe.flush()
+        except Exception as e:
+            raise e
 
     def run(self):
-        print(self._playlist)
-        # return subprocess.Popen(["mpv", f"{self._playlist}"], shell=True)
+        if self.wait_for_pipe():
+            self.send_command(f'loadfile "{self._playlist[0][0]}"')
+                
 
 class FileLoader:
     """Loads files from dir/dirs."""
