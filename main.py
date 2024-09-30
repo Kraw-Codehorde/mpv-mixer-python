@@ -17,9 +17,6 @@ class MPVController:
                                        stdin=subprocess.PIPE,
                                        stdout=subprocess.PIPE,
                                        stderr=subprocess.PIPE)
-        
-        # "003 How To Get The Most Out Of This Course copy 2.mp4" | Out-File -Encoding ASCII -NoNewline \\.\pipe\mpv-pipe
-        # mpv "003 How To Get The Most Out Of This Course copy 2.mp4" --input-ipc-server=\\.\pipe\mpvsocket
 
     def wait_for_pipe(self, timeout=5, interval=0.1):
         """Wait for the IPC pipe to be created."""
