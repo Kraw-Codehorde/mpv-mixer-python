@@ -1,11 +1,15 @@
 import os
+import sys
 import subprocess
 import random
 import time
 from collections import deque
+from more_itertools import random_permutation, random_combination, random_product
 from pymediainfo import MediaInfo
 
 FILE_EXTENSIONS=['mkv', 'mp4', 'ts']
+
+
 
 class MPVController:
     """Handles interactions with MPV commands."""
@@ -13,12 +17,14 @@ class MPVController:
     def __init__(self, ipc_path=r'\\.\pipe\mpv-pipe'):
         self._ipc_path = ipc_path
         self._playlist = PlaylistManager().playlist
+        self._is_playing = False
         self.mpv_process = subprocess.Popen(['mpv', '--idle', f'--input-ipc-server={self._ipc_path}', 
                                              '--script-opts=autoload-disabled=yes'],
                                        shell=True,
                                        stdin=subprocess.PIPE,
                                        stdout=subprocess.PIPE,
                                        stderr=subprocess.PIPE)
+        
 
     def wait_for_pipe(self, timeout=5, interval=0.1):
         """Wait for the IPC pipe to be created."""
@@ -50,12 +56,18 @@ class MPVController:
             try:
                 i_file = _list.popleft()
                 filename = i_file[0]
-                start = i_file[1][0]
-                self.send_command(f'loadfile "{filename}" replace start={start}')   #load current file
-                time.sleep(5)
-                self.send_command(f'loadfile "{filename}" replace start={start}')
+                start = i_file[1]*15
+
+                self.send_command(f'loadfile "{filename}" append-play start={start}')   #load current file
+                if self._is_playing:
+                    time.sleep(1)
+                    self.send_command(f'playlist-next')
+                time.sleep(3)
+                if not self._is_playing:
+                    self._is_playing = True
  
-            except IndexError:
+            except Exception as e:
+                print(e)
                 pass
 
 
@@ -76,7 +88,7 @@ class KeyboardController:
 class PlaylistManager:
     """Manages playlist."""
     
-    def __init__(self, length=15, total=500):
+    def __init__(self, length=15, total=600):
         self._length = length
         self._total = total
         self.playlist = self.prepare_playlist()
@@ -84,17 +96,12 @@ class PlaylistManager:
     def segment_file(self, duration):
         """Divide a file into segments set by duration"""
         segment_len = self._length
-        segments = duration // segment_len
-        out = []
-        counter = 0
-        for x in range(int(segments)):
-            current = x*segment_len
-            counter += 1
-            if counter == segments:
-                out.append((current, current + segment_len + ((duration % segment_len) - 1)))
-            else:            
-                out.append((current, current + segment_len))
-        return out   
+        segments = int(duration // segment_len)
+        total = self._total // segment_len
+        max_total = min(segments, total)
+
+        random_segments = list(random_permutation(range(segments), r=max_total))   
+        return random_segments
 
     def get_duration(self, file):
         vf = MediaInfo.parse(file)
@@ -104,32 +111,38 @@ class PlaylistManager:
     def shuffle_playlist(self, pl_dict):
         out = []
         l = self._total
-        _pl_dict = pl_dict
+        _pl_dict = pl_dict.copy()
         
         while l > 0 and len(_pl_dict):
             try:
-                rand_key = random.choice(list(_pl_dict.keys()))
-                key_value = _pl_dict.get(rand_key)
-                if not key_value:
-                    break
-                i = random.choice(range(len(key_value)))
-                rand_value = key_value.pop(i)
-                out.append((rand_key, rand_value))
-                l -= self._length
-            except Exception as e:
-                print(e)
-                pass
-        return out
-        
+               rand_key = random.choice(list(_pl_dict.keys()))  #random key from dict
+               key_value = _pl_dict[rand_key]   
+               if not len(key_value):   #if value from array is empty then remove key from dict
+                   del _pl_dict[rand_key]
+                   continue
+               
+               out.append((rand_key, key_value.pop()))
 
+               l -= self._length    #rest segment length from total playtime
+
+            except Exception as e:
+               pass
+        print('PRE-PLAYLIST', out)
+        return out
 
     def prepare_playlist(self):
         """Prepare the playlist to be played"""
         files = FileLoader.load_files_from_dir()        
+        print('raw files', files, len(files))
         pl = {}
         for f in files:
-            fd = self.get_duration(f)
-            pl[f] = self.segment_file(fd)
+            try:
+                fd = self.get_duration(f)
+                pl[f] = self.segment_file(fd)
+                print('file ready', pl[f])
+            except Exception as e:
+                print(e)
+                pass
         return self.shuffle_playlist(pl)
 
         
