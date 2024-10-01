@@ -7,6 +7,8 @@ from collections import deque
 from more_itertools import random_permutation, random_combination, random_product
 from pymediainfo import MediaInfo
 
+# os.environ['PYTHONUNBUFFERED'] = '1'
+
 FILE_EXTENSIONS=['mkv', 'mp4', 'ts']
 
 
@@ -22,8 +24,8 @@ class MPVController:
                                              '--script-opts=autoload-disabled=yes'],
                                        shell=True,
                                        stdin=subprocess.PIPE,
-                                       stdout=subprocess.PIPE,
-                                       stderr=subprocess.PIPE)
+                                       stdout=subprocess.DEVNULL,#subprocess.PIPE,
+                                       stderr=subprocess.DEVNULL)
         
 
     def wait_for_pipe(self, timeout=5, interval=0.1):
@@ -41,10 +43,23 @@ class MPVController:
 
     def send_command(self, command):
         """Send command to pipe"""
+        # self.mpv_process.wait()
+
         try:
            with open(self._ipc_path, 'w') as pipe:
+            #    time.sleep(1)
                pipe.write(command + "\n")
+            #    time.sleep(1)
                pipe.flush()
+               pipe.close()
+        # try:
+            # self.mpv_process.stdin.write((command + "\n").encode('utf-8'))
+            # self.mpv_process.stdin.write(command + "\n")
+            # self.mpv_process.communicate((command + "\n").encode('utf-8'))
+            # self.mpv_process.stdin.flush()
+            # self.mpv_process.stdin.write((command + "\n").encode())
+            # self.mpv_process.stdin.close()
+           
         except Exception as e:
             raise e
 
@@ -60,7 +75,6 @@ class MPVController:
 
                 self.send_command(f'loadfile "{filename}" append-play start={start}')   #load current file
                 if self._is_playing:
-                    time.sleep(1)
                     self.send_command(f'playlist-next')
                 time.sleep(3)
                 if not self._is_playing:
