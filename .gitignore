@@ -3,3 +3,6 @@
 main2.py
 asdf.py
 pipe_monitor.log
+*.spec
+/build
+/dist
