@@ -1,4 +1,5 @@
 import os
+import sys
 import subprocess
 import random
 import time
@@ -18,9 +19,9 @@ def set_pipe_uid():
 class MPVController:
     """Handles interactions with MPV commands."""
     
-    def __init__(self, ipc_path=r'\\.\pipe\mpv-pipe', segment_len=15):
+    def __init__(self, ipc_path=r'\\.\pipe\mpv-pipe', segment_len=15, working_dir=None):
         self._ipc_path = ipc_path
-        self._playlist = PlaylistManager(length=segment_len).playlist
+        self._playlist = PlaylistManager(length=segment_len, dir=working_dir).playlist
         self._is_playing = False
         self._segment_len = segment_len
         self.mpv_process = subprocess.Popen(['mpv', '--idle', f'--input-ipc-server={self._ipc_path}', 
@@ -89,11 +90,12 @@ class FileLoader:
     """Loads files from dir/dirs."""
     
     @staticmethod
-    def load_files_from_dir():
-        return [
-            f for f in os.listdir()
-            if f.split('.')[-1] in FILE_EXTENSIONS
-        ]
+    def load_files_from_dir(dir):
+        if os.path.exists(dir):
+            return [
+                f for f in os.listdir(dir)
+                if f.split('.')[-1] in FILE_EXTENSIONS
+            ]
 
 class KeyboardController:
     """Handles keyboard input."""
@@ -102,9 +104,10 @@ class KeyboardController:
 class PlaylistManager:
     """Manages playlist."""
     
-    def __init__(self, length=15, total=600):
+    def __init__(self, length=15, total=900, dir=None):
         self._length = length
         self._total = total
+        self._dir = dir
         self.playlist = self.prepare_playlist()
     
     def segment_file(self, duration):
@@ -146,7 +149,7 @@ class PlaylistManager:
 
     def prepare_playlist(self):
         """Prepare the playlist to be played"""
-        files = FileLoader.load_files_from_dir()        
+        files = FileLoader.load_files_from_dir(self._dir)        
         print('raw files', files, len(files))
         pl = {}
         for f in files:
@@ -161,8 +164,9 @@ class PlaylistManager:
 
 
 if  __name__ == "__main__":
+    wd = sys.argv[1] if len(sys.argv) > 1 else '.'
     segment_length = input("Enter duration (15 by default): ")
     segment_length = int(segment_length) if segment_length.strip() else 15
-    mpv = MPVController(ipc_path=set_pipe_uid(), segment_len=segment_length)
+    mpv = MPVController(ipc_path=set_pipe_uid(), segment_len=segment_length, working_dir=wd)
     mpv.run()
    
