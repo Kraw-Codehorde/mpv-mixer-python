@@ -1,5 +1,4 @@
 import os
-import sys
 import subprocess
 import random
 import time
@@ -7,7 +6,6 @@ from collections import deque
 from more_itertools import random_permutation, random_combination, random_product
 from pymediainfo import MediaInfo
 
-# os.environ['PYTHONUNBUFFERED'] = '1'
 
 FILE_EXTENSIONS=['mkv', 'mp4', 'ts']
 
@@ -47,33 +45,25 @@ class MPVController:
 
     def send_command(self, command):
         """Send command to pipe"""
-        # self.mpv_process.wait()
-        print(os.access(self._ipc_path, os.W_OK))
-
+        # print(os.access(self._ipc_path, os.W_OK))
         try:
            with open(self._ipc_path, 'w') as pipe:
-            #    time.sleep(1)
                pipe.write(command + "\n")
-            #    time.sleep(1)
                pipe.flush()
             #    pipe.close()
-        # try:
-            # self.mpv_process.stdin.write((command + "\n").encode('utf-8'))
-            # self.mpv_process.stdin.write(command + "\n")
-            # self.mpv_process.communicate((command + "\n").encode('utf-8'))
-            # self.mpv_process.stdin.flush()
-            # self.mpv_process.stdin.write((command + "\n").encode())
-            # self.mpv_process.stdin.close()
-           
         except Exception as e:
             raise e
 
     def run(self):
         self.wait_for_pipe()
         _list = deque(self._playlist)
+        _list_length = len(self._playlist)
+        counter = 1
   
         while len(_list):
             try:
+                print(f'PLAYING {counter} / {_list_length}')
+
                 i_file = _list.popleft()
                 filename = i_file[0]
                 start = i_file[1]*15
@@ -84,13 +74,13 @@ class MPVController:
                 time.sleep(3)
                 if not self._is_playing:
                     self._is_playing = True
+                counter += 1
  
             except Exception as e:
                 print(e)
                 pass
         if not len(_list):
             print('PLAYLIST OVER, EXITING...')
-            # self.mpv_process.kill()
             self.send_command(f'quit')
 
 
