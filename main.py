@@ -44,6 +44,7 @@ class MPVController:
     def send_command(self, command):
         """Send command to pipe"""
         # self.mpv_process.wait()
+        print(os.access(self._ipc_path, os.W_OK))
 
         try:
            with open(self._ipc_path, 'w') as pipe:
@@ -51,7 +52,7 @@ class MPVController:
                pipe.write(command + "\n")
             #    time.sleep(1)
                pipe.flush()
-               pipe.close()
+            #    pipe.close()
         # try:
             # self.mpv_process.stdin.write((command + "\n").encode('utf-8'))
             # self.mpv_process.stdin.write(command + "\n")
@@ -83,6 +84,10 @@ class MPVController:
             except Exception as e:
                 print(e)
                 pass
+        if not len(_list):
+            print('PLAYLIST OVER, EXITING...')
+            # self.mpv_process.kill()
+            self.send_command(f'quit')
 
 
 class FileLoader:
