@@ -26,7 +26,7 @@ class MPVController:
         self._segment_len = segment_len
         self.mpv_process = subprocess.Popen(['mpv', '--idle', f'--input-ipc-server={self._ipc_path}', 
                                              '--script-opts=autoload-disabled=yes',
-                                             '--no-border'],
+                                             ],
                                        shell=True,
                                        stdin=subprocess.PIPE,
                                        stdout=subprocess.DEVNULL,#subprocess.PIPE,
