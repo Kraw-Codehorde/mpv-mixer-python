@@ -18,10 +18,11 @@ def set_pipe_uid():
 class MPVController:
     """Handles interactions with MPV commands."""
     
-    def __init__(self, ipc_path=r'\\.\pipe\mpv-pipe'):
+    def __init__(self, ipc_path=r'\\.\pipe\mpv-pipe', segment_len=15):
         self._ipc_path = ipc_path
-        self._playlist = PlaylistManager().playlist
+        self._playlist = PlaylistManager(length=segment_len).playlist
         self._is_playing = False
+        self._segment_len = segment_len
         self.mpv_process = subprocess.Popen(['mpv', '--idle', f'--input-ipc-server={self._ipc_path}', 
                                              '--script-opts=autoload-disabled=yes'],
                                        shell=True,
@@ -71,7 +72,7 @@ class MPVController:
                 self.send_command(f'loadfile "{filename}" append-play start={start}')   #load current file
                 if self._is_playing:
                     self.send_command(f'playlist-next')
-                time.sleep(3)
+                time.sleep(self._segment_len)
                 if not self._is_playing:
                     self._is_playing = True
                 counter += 1
@@ -160,6 +161,8 @@ class PlaylistManager:
 
 
 if  __name__ == "__main__":
-    mpv = MPVController(ipc_path=set_pipe_uid())
+    segment_length = input("Enter duration (15 by default): ")
+    segment_length = int(segment_length) if segment_length.strip() else 15
+    mpv = MPVController(ipc_path=set_pipe_uid(), segment_len=segment_length)
     mpv.run()
    
