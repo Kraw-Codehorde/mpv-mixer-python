@@ -91,7 +91,7 @@ class FileLoader:
     
     @staticmethod
     def load_files_from_dir(dir):
-        if os.path.exists(dir):
+        if os.path.isdir(dir):
             return [
                 f for f in os.listdir(dir)
                 if f.split('.')[-1] in FILE_EXTENSIONS
@@ -164,9 +164,10 @@ class PlaylistManager:
 
 
 if  __name__ == "__main__":
-    wd = sys.argv[1] if len(sys.argv) > 1 else '.'
+    wd = '.'
+    if len(sys.argv) > 1:
+        wd = sys.argv[1].strip('"')
     segment_length = input("Enter duration (15 by default): ")
     segment_length = int(segment_length) if segment_length.strip() else 15
     mpv = MPVController(ipc_path=set_pipe_uid(), segment_len=segment_length, working_dir=wd)
     mpv.run()
-   
