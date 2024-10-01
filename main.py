@@ -11,7 +11,11 @@ from pymediainfo import MediaInfo
 
 FILE_EXTENSIONS=['mkv', 'mp4', 'ts']
 
-
+def set_pipe_uid():
+    rand_uid = random.randint(1000, 9999)
+    ts = int(time.time())
+    s = rf'\\.\pipe\mpv-pipe-{ts}-{rand_uid}'
+    return s
 
 class MPVController:
     """Handles interactions with MPV commands."""
@@ -164,9 +168,8 @@ class PlaylistManager:
                 pass
         return self.shuffle_playlist(pl)
 
-        
 
 if  __name__ == "__main__":
-    mpv = MPVController()
+    mpv = MPVController(ipc_path=set_pipe_uid())
     mpv.run()
    
