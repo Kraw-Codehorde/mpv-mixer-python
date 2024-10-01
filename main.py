@@ -45,8 +45,7 @@ class MPVController:
     def run(self):
         self.wait_for_pipe()
         _list = deque(self._playlist)
-        print('PLAYLIST LEN', len(self._playlist))
-        # print(self._playlist)
+  
         while len(_list):
             try:
                 i_file = _list.popleft()
@@ -55,17 +54,10 @@ class MPVController:
                 self.send_command(f'loadfile "{filename}" replace start={start}')   #load current file
                 time.sleep(5)
                 self.send_command(f'loadfile "{filename}" replace start={start}')
-                # time.sleep(2)
-                # self.send_command(f'playlist-next')
+ 
             except IndexError:
                 pass
 
-        # self.send_command(f'loadfile "{self._playlist[0][0]}" replace start={self._playlist[0][1][0]}')
-        # time.sleep(2)
-        # print('start 2nd file', self._playlist[1][1][0])
-        # self.send_command(f'loadfile "{self._playlist[1][0]}" append start={self._playlist[1][1][0]}')
-
-                
 
 class FileLoader:
     """Loads files from dir/dirs."""
