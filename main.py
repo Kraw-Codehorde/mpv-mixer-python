@@ -8,9 +8,10 @@ from more_itertools import random_permutation, random_combination, random_produc
 from pymediainfo import MediaInfo
 
 
-FILE_EXTENSIONS=['mkv', 'mp4', 'ts']
+FILE_EXTENSIONS=['mkv', 'mp4', 'ts']    #add more extensions if needed
 
 def set_pipe_uid():
+    """Random unique pipe name generator, so you can run multiple instances at the same time."""
     rand_uid = random.randint(1000, 9999)
     ts = int(time.time())
     s = rf'\\.\pipe\mpv-pipe-{ts}-{rand_uid}'
@@ -84,7 +85,7 @@ class MPVController:
                 pass
         if not len(_list):
             print('PLAYLIST OVER, EXITING...')
-            self.send_command(f'quit')
+            self.send_command(f'quit')  #remove this if you want mpv to loop playlist instead of exiting
 
 
 class FileLoader:
@@ -103,7 +104,11 @@ class KeyboardController:
     pass
 
 class PlaylistManager:
-    """Manages playlist."""
+    """Manages playlist.
+    length(seconds) -> length of the segments to be played from video file.
+    total(seconds) -> total length of playlist.
+    dir -> dir location of files to be played. 
+    """
     
     def __init__(self, length=15, total=900, dir=None):
         self._length = length
@@ -122,6 +127,7 @@ class PlaylistManager:
         return random_segments
 
     def get_duration(self, file):
+        """Get duration stat from video file."""
         vf = MediaInfo.parse(file)
         duration = ([t for t in vf.tracks if t.track_type == "Video"][0].duration) / 1000
         return duration
@@ -145,7 +151,7 @@ class PlaylistManager:
 
             except Exception as e:
                pass
-        print('PRE-PLAYLIST', out)
+        # print('PRE-PLAYLIST', out)
         return out
 
     def prepare_playlist(self):
