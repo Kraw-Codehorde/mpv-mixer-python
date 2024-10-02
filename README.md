@@ -48,7 +48,7 @@ Project Title is released under the MIT License. See the **[LICENSE](https://www
 
 **Q:** What is this for?
 
-**A:** It just makes a playlist in mpv with random sections from different videos. I didn't see one like this one on the internet, so i had to make it.
+**A:** It just makes a playlist in mpv with random sections from different videos. I didn't see one like this on the internet, so i had to make it.
 
 **Q:** How do I use it?
 
@@ -68,4 +68,4 @@ Project Title is released under the MIT License. See the **[LICENSE](https://www
 
 ## **Contact**
 
-If you have any questions or comments about Project Title, please contact **[Nico](kraw.hq@gmail.com)**.
+If you have any questions or comments about Project Title, please contact me at **kraw.hq@gmail.com**
