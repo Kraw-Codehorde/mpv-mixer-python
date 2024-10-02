@@ -68,4 +68,4 @@ Project Title is released under the MIT License. See the **[LICENSE](https://www
 
 ## **Contact**
 
-If you have any questions or comments about Project Title, please contact me at **kraw.hq@gmail.com**
+If you have any questions or comments, please contact me at **kraw.hq@gmail.com**
