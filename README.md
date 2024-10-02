@@ -42,7 +42,7 @@ If downloaded just main.py:
 
 ## **License**
 
-Project Title is released under the MIT License. See the **[LICENSE](https://www.blackbox.ai/share/LICENSE)** file for details.
+Project Title is released under the MIT License.
 
 ## **FAQ**
 
