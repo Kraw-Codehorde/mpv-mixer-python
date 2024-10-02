@@ -27,11 +27,11 @@ If downloaded the executable:
 
 1. Place the executable in the folder with all your media files and just run it.
 2. On the shell window it will prompt you for a a duration. This duration refers to the length of each segment/chunk that you want to play. By default its 15 seconds, caution against lowering it too much, mpv might bug and not work as expected.
-3. (optional) Make a .bat shortcut to point at this file location so you dont need to copy/paste it on each different location. A simple .bat like this will work out just fine.
+3. (optional) Make a .bat shortcut to point at this file location so you dont need to copy/paste it on each different location. A simple .bat like this will work out just fine (change dir to point to your file).
 
 ```
 @echo off
-start "" "C:\Users\Santi\projects\mpv-mixer-python\dist\main.exe" "%~dp0"
+start "" "C:\your\path\to\file\main.exe" "%~dp0"
 ```
 
 If downloaded just main.py:
